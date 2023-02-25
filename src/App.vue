@@ -13,7 +13,7 @@ import badge from './components/badge/badge.vue';
     </a>
   </div>
   <badge :value="110">
-    <button>入门</button>
+    <button>入门1</button>
   </badge>
   <HelloWorld msg="Vite + Vue" />
 </template>
