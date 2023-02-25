@@ -1,25 +1,49 @@
+# 显示在github action页面左侧的名称
 name: GitHub Actions Build and Deploy Demo
+# 监听触发工作流测事件
 on:
+  # 监听push事件
+  # 事件监听和事件的筛选器文档: https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
   push:
+    # 事件触发的筛选器
+    # 这里的事件筛选器含义是发生在哪个分支触发了事件
     branches:
+      # main分支 也可以写成其他形式
       - main
+# 作业
+# https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#jobs
 jobs:
+  # 名称，定义后即为一个job(可以随意定义)
   build-and-deploy:
+    # 作业在什么机器上运行
     runs-on: ubuntu-latest
     strategy:
+      # 如果说需要测试功能在多系统或者多语言版本下的表现，可以使用矩阵策略。
+      # https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategy
+      # https://docs.github.com/zh/actions/using-jobs/using-a-matrix-for-your-jobs
       matrix:
         node-version: ["14.*"]
     steps:
+      # 步骤的名称,此名称将在github action页面的workflow执行时标明执行的step名称
       - name: Checkout
+        # 标识此步骤将要运行. 简单理解使用了一个其他人写好的插件
+        # actions/checkout@v2作用是类似于git checkout的作用，
+        # 将代码拷贝到当前这个job的工作流中，以便于后续build使用
         uses: actions/checkout@v2
       - name: copy file via ssh password
+        # appleboy/scp-action@master插件作用是将文件通过scp命令将文件拷贝到服务器
         uses: appleboy/scp-action@master
+        # with是给插件传递参数
         with:
+          # secrets是存在敏感信息(服务器访问密码登)的一个上下文。
+          # secrets 项目的setting -> Actions secrets and variables -> Actions 打开后即可看到 New respository secret按钮
+          # 上下文文档: https://docs.github.com/zh/actions/learn-github-actions/contexts
           host: ${{ secrets.TENCENT_CLOUD_IP }}
           username: ${{ secrets.TENCENT_CLOUD_NAME }}
           password: ${{ secrets.TENCENT_CLOUD_PASSWORD }}
           source: "./deploy.sh"
           target: "/root"
+      # pnpm 命令准备,如果没有这个插件后续的pnpm install 操作会报pnpm 不存在
       - uses: pnpm/action-setup@v2
         with:
           version: 7
@@ -28,6 +52,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+      # node_modules的缓存处理。如果不加缓存每次都install，工作流的时间会非常长。
+      # 严重影响使用体验
       - name: Cache
         id: cache-dependencies
         uses: actions/cache@v3
@@ -39,34 +65,45 @@ jobs:
       - name: Installing Dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: pnpm install
+      # 执行vue项目中的测试命令,如果test没有跑过，则工作流执行失败
       - name: Test
         run: pnpm run test:run
+      # 执行vue项目打包命令
       - name: Build
         run: |
           pnpm build
+      # 登录到Docker Hub    
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
+      # 抽取镜像的tag和labels等信息,用于后续镜像打包时使用
       - name: Extract metadata (tags, labels) for Docker
+        # 后续step获取这个step输出时使用
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: qimingzizeinan1/my-project
-
+      # 打包并且推送镜像到Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
+          # steps.meta这里的meta是前面的id: meta的那个step
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      # ssh 登录远程服务器
+      # 类似于使用: ssh root@122.122.122.122    
       - name: ssh docker login
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.TENCENT_CLOUD_IP }}
           username: ${{ secrets.TENCENT_CLOUD_NAME }}
           password: ${{ secrets.TENCENT_CLOUD_PASSWORD }}
+          # 登录服务器后要执行的命令
+          # 这里的cd ~是切换目录到/root目录后执行deploy.sh。
+          # 而deploy.sh是前面通过scp插件kcopy到/root目录的，可以看一下前面的配置
+          # deploy.sh中也有着对应的讲解
           script: cd ~ && sh deploy.sh ${{ secrets.DOCKER_USERNAME }} ${{ secrets.DOCKER_PASSWORD }}
