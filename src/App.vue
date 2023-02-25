@@ -15,6 +15,7 @@ import badge from './components/badge/badge.vue';
   <badge :value="110">
     <button>入门1</button>
   </badge>
+  123456789
   <HelloWorld msg="Vite + Vue" />
 </template>
 
