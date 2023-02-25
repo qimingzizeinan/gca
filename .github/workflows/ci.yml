@@ -2,13 +2,32 @@ name: GitHub Actions Build and Deploy Demo
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["14.*"]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.TENCENT_CLOUD_IP }}
+          username: ${{ secrets.TENCENT_CLOUD_NAME }}
+          password: ${{ secrets.TENCENT_CLOUD_PASSWORD }}
+          source: "./deploy.sh"
+          target: "/root"
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - name: Cache
         id: cache-dependencies
         uses: actions/cache@v3
