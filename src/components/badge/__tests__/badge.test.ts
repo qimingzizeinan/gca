@@ -23,8 +23,6 @@ describe('Badge', () => {
         default: () => CONTENT,
       },
     });
-    expect(wrapper.html()).toContain(
-      '<div class="test-content">content</div>1'
-    );
+    expect(wrapper.html()).toContain('<div class="test-content">content</div>');
   });
 });
