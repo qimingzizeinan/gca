@@ -12,7 +12,7 @@ import badge from './components/badge/badge.vue';
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <badge>
+  <badge :value="110">
     <button>入门</button>
   </badge>
   <HelloWorld msg="Vite + Vue" />
