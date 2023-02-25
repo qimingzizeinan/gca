@@ -179,4 +179,6 @@ echo -e "---------deploy Success--------"
   
 [构建功能分支测试环境发布](https://q.shanyue.tech/deploy/ci-intro.html#cicd-%E5%B7%A5%E5%85%B7%E4%B8%8E%E4%BA%A7%E5%93%81)
 
+[结合镜像容器服务托管镜像实现不上传到Docker Hub](https://juejin.cn/post/7022092455528890399#heading-23)
+
 [Electron、Github Action自动打包发布与更新](https://juejin.cn/post/7094865414353584164)
