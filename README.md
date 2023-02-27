@@ -14,8 +14,8 @@
 
 ## 基本概念介绍
 
-- Event：工作流要在什么时间触发后执行。类似于Vue的声明周期函数
-- Job：工作流都包含哪些作业。一个工作流包含一个或多个Job.默认并行执行，可以串行执行。串行的配置方式可阅读上方文档或者该[文章](https://q.shanyue.tech/deploy/ci-ci.html#%E4%BD%BF%E7%94%A8-github-actions-%E8%BF%9B%E8%A1%8C-ci)
+- Event：工作流要在什么事件触发后执行。类似于Vue的生命周期函数
+- Job：工作流都包含哪些Jog(作业)。一个工作流包含一个或多个Job.默认并行执行，可以串行执行。串行的配置方式可阅读上方文档或者该[文章](https://q.shanyue.tech/deploy/ci-ci.html#%E4%BD%BF%E7%94%A8-github-actions-%E8%BF%9B%E8%A1%8C-ci)
 - Step：Job的组成部分.定义具体是什么操作需要自动化的执行。可以访问工作区和文件系统.
 
 ## 场景化
@@ -87,7 +87,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       # node_modules的缓存处理。如果不加缓存每次都install，工作流的时间会非常长。
-      # 严重影响使用体验
+      # 因此不做cache处理,将会严重影响使用体验
       - name: Cache
         id: cache-dependencies
         uses: actions/cache@v3
@@ -144,19 +144,20 @@ jobs:
 
 ```
 
+`deploy.sh`
 ```sh
 echo -e "---------docker Login--------"
 # 登录docker
 docker login --username=$1  --password=$2
 echo -e "---------docker Stop--------"
-# 暂停服务上正在运行的container
+# 停止正在运行的container
 docker stop my-project
 echo -e "---------docker Rm--------"
 # docker rm my-project
 # 删除旧镜像
 # Warning
 # 注意这里的main。如果不写main则需要主要到github action的工作流中使用的tag是什么。
-# 这两个地方的tag要一一对应，否则这里不写，服务器部署时会默认使用latest这个tag。导致上线后的文件一直没有变更.
+# 这两个地方的tag要一一对应，如果这里不写，服务器部署时会默认使用latest这个tag。导致上线后的文件一直没有变更.
 docker rmi qimingzizeinan1/my-project:main
 echo -e "---------docker Pull--------"
 # 拉取新镜像从Docker Hub中
