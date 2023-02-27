@@ -15,7 +15,7 @@
 ## 基本概念介绍
 
 - Event：工作流要在什么事件触发后执行。类似于Vue的生命周期函数
-- Job：工作流都包含哪些Jog(作业)。一个工作流包含一个或多个Job.默认并行执行，可以串行执行。串行的配置方式可阅读上方文档或者该[文章](https://q.shanyue.tech/deploy/ci-ci.html#%E4%BD%BF%E7%94%A8-github-actions-%E8%BF%9B%E8%A1%8C-ci)
+- Job：工作流都包含哪些Job(作业)。一个工作流包含一个或多个Job.默认并行执行，可以串行执行。串行的配置方式可阅读上方文档或者该[文章](https://q.shanyue.tech/deploy/ci-ci.html#%E4%BD%BF%E7%94%A8-github-actions-%E8%BF%9B%E8%A1%8C-ci)
 - Step：Job的组成部分.定义具体是什么操作需要自动化的执行。可以访问工作区和文件系统.
 
 ## 场景化
